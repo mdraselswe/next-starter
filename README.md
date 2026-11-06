@@ -13,37 +13,16 @@ A strict, configurable Next.js starter for new projects. One config folder holds
 
 ## Start a new project
 
-**With AI (recommended).** Open Claude Code in your projects folder (e.g. `E:\Code\Personal`) and say:
+Works with any AI coding tool (Claude Code, Cursor, Codex, …). No AI subscription needed afterwards.
 
-> /new-project — a booking site for a small dental clinic
+1. Make an empty folder named after the project, e.g. `E:\Code\Personal\dental-clinic`, and open it in your AI tool.
+2. Say:
 
-The `new-project` skill (installed in `~/.claude/skills/`, source in `.claude/skills/new-project/`) creates the private repo from this template, updates everything to the latest versions, turns on automatic updates, applies the brand and then plans and builds the product with `STARTER-KIT.md`. It only asks you about the idea and design.
+   > Read `E:\Code\Personal\next-starter\NEW-PROJECT.md` and follow it. Idea: a booking site for a small dental clinic.
 
-**By hand:**
+The AI creates the private GitHub repo from this template (or a local copy), upgrades everything to the newest versions, sets up automatic updates, then plans the product with you (it asks for an "ok" on the brief and the design) and builds it. Every step is in [NEW-PROJECT.md](NEW-PROJECT.md), so you can also do it by hand.
 
-```bash
-gh repo create my-app --template mdraselswe/next-starter --private --clone
-```
-
-```bash
-cd my-app
-```
-
-```bash
-pnpm install
-```
-
-```bash
-pnpm setup-project my-app
-```
-
-```bash
-pnpm github-setup
-```
-
-`setup-project` renames the package, updates every dependency to its latest version (except the majors held in `version-holds.json`), installs the Playwright browser and runs the full check. `github-setup` turns on auto-merge and makes CI required on `main` (GitHub doesn't copy settings from a template). Then edit the config ([docs/configuration.md](docs/configuration.md)), pick `pnpm mode static|server`, and give your AI `STARTER-KIT.md` (Prompts 3–4 are already done).
-
-Requirements: Node 26 LTS (`.nvmrc`; Node 24 LTS also works), pnpm (`corepack enable`), and the `gh` CLI logged in.
+Requirements: Node 26 LTS (`.nvmrc`; Node 24 LTS also works), pnpm (`corepack enable`), git, and the `gh` CLI logged in for GitHub.
 
 ## Commands
 
@@ -78,28 +57,28 @@ CI builds both, so code stays portable until a project commits to one. Details: 
 - **Server:** `pnpm mode server` removes `vercel.json`; Vercel detects Next.js.
 - Set `NEXT_PUBLIC_SITE_URL` in the host if it differs from `site.url`. Other hosts: build command `pnpm build`; output `out` (static) or a Node server running `pnpm start` (server).
 
-## Staying up to date (no manual reviews)
+## Staying up to date (no AI, no manual reviews)
 
-| Layer                                                | What it does                                                                                                                            |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/dependabot.yml`                             | Weekly PRs for npm and Actions, 3-day cooldown, patch/minor grouped                                                                     |
-| `.github/workflows/dependabot-automerge.yml`         | Every Dependabot PR (majors too) merges itself once CI passes                                                                           |
-| Ruleset "main: CI must pass" (`pnpm github-setup`)   | Nothing reaches `main` through a PR with a red `check`                                                                                  |
-| Weekly Claude routine → `.claude/skills/maintain`    | Fixes Dependabot PRs that fail CI, takes held/missed majors, moves Node LTS, refreshes template defaults; pushes a `maintain/**` branch |
-| `.github/workflows/maintain-pr.yml`                  | Turns a `maintain/**` push into a PR with auto-merge                                                                                    |
-| `.github/workflows/freshness.yml` + `pnpm freshness` | Fails weekly if a major or Node LTS is behind without a hold                                                                            |
-| `version-holds.json`                                 | Majors deliberately held back, with the reason (the routine re-checks them)                                                             |
-| pnpm `minimumReleaseAge`                             | Never installs a version published less than a day ago                                                                                  |
+Everything below runs on GitHub's free automation. Nobody has to review or merge anything.
 
-Safety net: CI runs typecheck, lint, unit tests, both render-mode builds and Playwright + axe before anything merges. An update that breaks the build just waits (red) until the routine fixes it.
+| Layer                                              | What it does                                                                                                                                                                                                                       |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.github/dependabot.yml`                           | Weekly PRs for npm and Actions, 3-day cooldown, patch/minor grouped                                                                                                                                                                |
+| `workflows/dependabot-automerge.yml`               | Every Dependabot PR (majors too) merges itself once CI passes                                                                                                                                                                      |
+| Ruleset "main: CI must pass" (`pnpm github-setup`) | Nothing with a red `check` reaches `main`                                                                                                                                                                                          |
+| `workflows/auto-upgrade.yml` + `pnpm auto-upgrade` | Every Monday: moves Node LTS, takes all minor/patch, tries each major alone; keeps what passes the checks, holds what breaks and tries it again next week, removes holds that work now. Ships only after full CI (with e2e) passes |
+| `version-holds.json`                               | Versions that currently break the checks (kept in sync with Dependabot's ignore list automatically)                                                                                                                                |
+| `workflows/freshness.yml` + `pnpm freshness`       | Fails if something is behind without a hold                                                                                                                                                                                        |
+| pnpm `minimumReleaseAge`                           | Never installs a version published less than a day ago                                                                                                                                                                             |
 
-Manual major upgrades: [docs/updating.md](docs/updating.md).
+What still needs a person (or any AI): a major that breaks the checks stays held until its own ecosystem catches up (the weekly run picks it up then, no action needed) or someone fixes our code for it. When the run can't finish, GitHub opens an issue **"Auto-upgrade needs attention"** with instructions; you get an email. Codemods and migration notes: [docs/updating.md](docs/updating.md).
+
+New projects copy all of this, and `setup-project` runs the auto-upgrade first, so a new project starts on the newest versions even if this template is a week behind.
 
 ### Setup (once per repo)
 
-- `pnpm github-setup` — auto-merge, required `check`, Actions may open PRs.
-- Template repo only: **Settings → General → Template repository** ✓ (already on for next-starter).
-- Optional AI maintenance: GitHub connected to claude.ai (https://claude.ai/connect-github), then a weekly routine at https://claude.ai/code/routines with the prompt _"Follow .claude/skills/maintain/SKILL.md."_
+- `pnpm github-setup`: auto-merge on, `check` required on `main` (already done for next-starter).
+- Template repo only: **Settings → General → Template repository** ✓ (already on).
 
 ## Folder map
 
@@ -132,10 +111,13 @@ STARTER-KIT.md        prompts from idea to launch for any AI
 
 ## Bangla quick guide
 
-**Notun project:** Claude Code khulo `E:\Code\Personal` folder e, tarpor likho:
+**Notun project (je kono AI tool diye: Claude, Cursor, Codex):**
 
-> /new-project — amar idea ekhane (jemon: "ekta dental clinic er booking site")
+1. Project er naame ekta khali folder banao, jemon `E:\Code\Personal\dental-clinic`, ar sheta AI tool e khulo.
+2. AI ke likho:
 
-Baki shob AI korbe: GitHub e private repo, latest version e setup, auto-update on, design ar page banano. Tomake shudhu idea ar design niye 1–2 ta proshner uttor dite hobe.
+   > Read `E:\Code\Personal\next-starter\NEW-PROJECT.md` and follow it. Idea: (tomar idea)
 
-**Update:** kichu korte hobe na. Protita update PR CI pass korle nije nije merge hoy. Kono update code bhenge dile, protita mongolbar Claude-er weekly routine sheta thik kore dey. Kichu atke gele routine-er report e lekha thakbe.
+Baki shob AI korbe. Tomake shudhu idea bolte hobe, ar plan/design e "ok" dite hobe.
+
+**Update:** kichu korte hobe na, AI-o lagbe na. Protita shombar GitHub nije-i shob package latest kore, test chalay, pass korle merge kore. Kono notun version code bhangle sheta hold kore rakhe, porer shoptahe abar try kore. Kokhono atke gele GitHub ekta issue khulbe ("Auto-upgrade needs attention") ar tomake email dibe.

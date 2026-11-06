@@ -1,15 +1,16 @@
 # Keeping versions current
 
-No AI is needed for most updates. Four layers work together:
+No AI and no person is needed for updates. These layers work together:
 
-| Layer                                                            | What it does                                                                                                           | Your part                              |
-| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **Dependabot** (`.github/dependabot.yml`)                        | Weekly PRs for npm packages and GitHub Actions; waits 3 days after a release (cooldown); patch/minor grouped in one PR | none                                   |
-| **Auto-merge** (`workflows/dependabot-automerge.yml`)            | Every Dependabot PR (majors too) merges itself once CI is green                                                        | `pnpm github-setup`                    |
-| **Freshness gate** (`pnpm freshness`, `workflows/freshness.yml`) | Fails weekly and on PRs if a major is behind without a hold, or Node LTS moved                                         | upgrade, or add a hold with the reason |
-| **setup-project** (`pnpm setup-project <name>`)                  | A new project from this template starts on today's versions                                                            | run once                               |
+| Layer                                                                | What it does                                                                                                           | Your part                              |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| **Dependabot** (`.github/dependabot.yml`)                            | Weekly PRs for npm packages and GitHub Actions; waits 3 days after a release (cooldown); patch/minor grouped in one PR | none                                   |
+| **Auto-merge** (`workflows/dependabot-automerge.yml`)                | Every Dependabot PR (majors too) merges itself once CI is green                                                        | `pnpm github-setup`                    |
+| **Freshness gate** (`pnpm freshness`, `workflows/freshness.yml`)     | Fails weekly and on PRs if a major is behind without a hold, or Node LTS moved                                         | upgrade, or add a hold with the reason |
+| **setup-project** (`pnpm setup-project <name>`)                      | A new project from this template starts on today's versions                                                            | run once                               |
+| **Auto-upgrade** (`pnpm auto-upgrade`, `workflows/auto-upgrade.yml`) | Weekly: Node LTS, minor/patch, each major alone; keeps what passes, holds what fails and retries next week             | none (an issue opens if it needs you)  |
 
-## A major update arrives (e.g. Next 17)
+## A major is held because it breaks the checks (e.g. Next 17)
 
 1. Read the PR's release notes and the package's migration guide.
 2. Run the official codemod if there is one, then `pnpm check` and `pnpm test:e2e`:

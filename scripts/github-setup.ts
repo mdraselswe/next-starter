@@ -3,8 +3,6 @@
  *   pnpm github-setup
  *
  * - Allow auto-merge, delete merged branches
- * - Let GitHub Actions open pull requests (maintenance branches, see
- *   .github/workflows/maintain-pr.yml)
  * - Ruleset on the default branch: the CI "check" job must pass; no deletion
  *   or force-push. Repository admins (you) can still push directly.
  * Safe to run again: the ruleset is only created when missing.
@@ -28,16 +26,6 @@ gh([
   "allow_auto_merge=true",
   "-F",
   "delete_branch_on_merge=true",
-]);
-gh([
-  "api",
-  "-X",
-  "PUT",
-  `repos/${repo}/actions/permissions/workflow`,
-  "-f",
-  "default_workflow_permissions=read",
-  "-F",
-  "can_approve_pull_request_reviews=true",
 ]);
 
 const existing: string[] = JSON.parse(gh(["api", `repos/${repo}/rulesets`, "-q", "[.[].name]"]));
@@ -65,4 +53,4 @@ if (existing.includes(RULESET)) {
   gh(["api", "-X", "POST", `repos/${repo}/rulesets`, "--input", "-"], JSON.stringify(ruleset));
   process.stdout.write(`Created ruleset "${RULESET}"\n`);
 }
-process.stdout.write("Done: auto-merge on, Actions may open PRs, CI required on the default branch.\n");
+process.stdout.write("Done: auto-merge on, CI required on the default branch.\n");

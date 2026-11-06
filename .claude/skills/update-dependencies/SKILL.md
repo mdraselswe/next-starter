@@ -5,7 +5,7 @@ description: Bring dependencies up to date, handle a major upgrade, or fix a fai
 
 # Update dependencies
 
-1. `pnpm freshness` and `pnpm outdated` to see what's behind.
+1. `pnpm auto-upgrade` first: it takes everything that passes the checks and holds the rest. Then `pnpm freshness`; an open "Auto-upgrade needs attention" issue says what failed.
 2. Patch/minor: `pnpm update` then `pnpm check`. (Dependabot usually does this automatically.)
 3. Each major separately:
    - Read the release notes and migration guide; check peers (`pnpm view <pkg> peerDependencies`, and which versions its plugins accept).

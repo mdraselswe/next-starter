@@ -3,13 +3,14 @@
  *   pnpm setup-project my-app
  *
  * 1. Renames the package.
- * 2. Updates every dependency to its latest version (except majors held in
- *    version-holds.json), so a new project never starts on old versions.
+ * 2. Runs auto-upgrade: every dependency (and Node LTS) moves to its latest
+ *    version that passes the checks, so a new project never starts old even
+ *    if the template fell behind.
  * 3. Installs the Playwright browser and runs the full check.
  * Then edit src/config/site.ts (see docs/configuration.md).
  */
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 
 const name = process.argv[2];
 if (!name || !/^[a-z0-9][a-z0-9-._]*$/.test(name)) {
@@ -27,13 +28,11 @@ pkg.name = name;
 pkg.version = "0.1.0";
 writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
 
-const holds: { package: string; below: number }[] = JSON.parse(
-  readFileSync("version-holds.json", "utf8"),
-).holds;
-const held = holds.map((h) => `"!${h.package}"`).join(" ");
-run(`pnpm update --latest ${held}`);
-// Held packages still get their newest version below the hold.
-for (const h of holds) run(`pnpm update "${h.package}@<${h.below}"`);
+// Only needed in the template itself.
+rmSync("NEW-PROJECT.md", { force: true });
+
+run("pnpm install");
+run("node scripts/auto-upgrade.ts");
 
 run("pnpm exec playwright install chromium");
 run("pnpm check");
@@ -43,5 +42,6 @@ Done. Next steps:
   1. Edit src/config/site.ts (name, colours, URL), src/config/features.ts, src/content, src/i18n
   2. pnpm mode static|server   (how it is built and hosted)
   3. pnpm dev
-  4. Give STARTER-KIT.md to your AI and run Prompt 0 (product spec)
+  4. pnpm github-setup   (once the GitHub repo exists: auto-merge + required CI)
+  5. Give STARTER-KIT.md to your AI and run Prompt 0 (product spec)
 `);

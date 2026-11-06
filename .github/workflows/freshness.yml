@@ -5,7 +5,7 @@ name: Freshness
 
 on:
   schedule:
-    - cron: "0 3 * * 1" # Mondays 03:00 UTC
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC, after auto-upgrade
   pull_request:
   workflow_dispatch:
 

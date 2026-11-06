@@ -54,3 +54,4 @@ next-env.d.ts
 /public/sw.js
 
 !.env.example
+auto-upgrade-report.md

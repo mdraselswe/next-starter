@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Project guide (for AI agents and humans)
 
-Built from **next-starter**. Read `README.md` for the overview, `docs/configuration.md` for where values live, and `docs/adr/` for decisions. For a new product, follow `STARTER-KIT.md` from Prompt 0.
+Built from **next-starter**. Read `README.md` for the overview, `docs/configuration.md` for where values live, and `docs/adr/` for decisions. For a new product, follow `STARTER-KIT.md` from Prompt 0. Starting a project from the starter: `NEW-PROJECT.md`.
 
 Stack: Next.js 16 (App Router, Turbopack, React Compiler, typed routes) · React 19 · TypeScript 6 strict · Tailwind CSS 4 · shadcn/ui on Base UI · zod 4 · Vitest · Playwright + axe · pnpm · Node 26 LTS (`.nvmrc`; Node 24 also works). Exact versions: `package.json`. Held-back majors: `version-holds.json`.
 
@@ -21,6 +21,7 @@ Stack: Next.js 16 (App Router, Turbopack, React Compiler, typed routes) · React
 - `pnpm test:e2e` — Playwright + accessibility on the production build (`pnpm build` first)
 - `pnpm mode static|server` — switch render mode (also updates vercel.json)
 - `pnpm freshness` — fails if a dependency major or Node LTS is behind
+- `pnpm auto-upgrade` — upgrade everything that passes the checks; hold what breaks (CI runs it weekly)
 - `npx shadcn@latest add <component>` — add UI components (into `src/components/ui`)
 
 ## Rules (non-negotiable)
@@ -49,7 +50,7 @@ Stack: Next.js 16 (App Router, Turbopack, React Compiler, typed routes) · React
 
 ## Skills
 
-`.claude/skills/`: `new-project`, `add-page`, `add-feature`, `rebrand`, `update-dependencies`, `maintain` (weekly unattended updates). Other AI tools: read the same `SKILL.md` files.
+`.claude/skills/`: `add-page`, `add-feature`, `rebrand`, `update-dependencies`. Other AI tools: read the same `SKILL.md` files.
 
 ## Definition of done
 

@@ -6,12 +6,6 @@
       "below": 7,
       "reason": "typescript-eslint supports TypeScript < 6.1",
       "since": "2026-11-06"
-    },
-    {
-      "package": "eslint",
-      "below": 10,
-      "reason": "eslint-config-next plugins (react, import, jsx-a11y) peer on ESLint <= 9",
-      "since": "2026-11-06"
     }
   ]
 }

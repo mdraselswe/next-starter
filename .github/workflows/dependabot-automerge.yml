@@ -1,7 +1,7 @@
 # Turns on auto-merge for every Dependabot PR (patch, minor and major).
 # GitHub merges it only after the required "check" job passes (ruleset on main),
-# so a breaking update stays open with a red check until it is fixed (the weekly
-# maintenance routine, .claude/skills/maintain, does that).
+# so a breaking update stays open with a red check; the weekly auto-upgrade then
+# holds that version and closes the PR (workflows/auto-upgrade.yml).
 name: Dependabot auto-merge
 
 on: pull_request

@@ -1,0 +1,95 @@
+# Weekly self-update, no AI needed: `pnpm auto-upgrade` takes every version that
+# passes the checks (majors one at a time; failing ones are held and retried next
+# week). The result goes to a branch, the full CI (with e2e) runs on it, and main
+# is fast-forwarded only when CI is green. If something needs a person, an issue
+# is opened (you get an email).
+name: Auto-upgrade
+
+on:
+  schedule:
+    - cron: "0 1 * * 1" # Mondays 01:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+  issues: write
+  pull-requests: write
+
+concurrency: auto-upgrade
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      HUSKY: "0"
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm auto-upgrade
+
+      - name: Ship through CI
+        id: ship
+        run: |
+          if git diff --quiet; then echo "Nothing changed."; exit 0; fi
+          branch="auto-upgrade/${{ github.run_id }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898163+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A
+          git commit -q -m "build(deps): weekly auto-upgrade" -m "$(cat auto-upgrade-report.md)"
+          git push -q origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+          # Pushes made with GITHUB_TOKEN don't start workflows, but a dispatch does.
+          gh workflow run ci.yml --ref "$branch"
+          for _ in $(seq 1 30); do
+            sleep 10
+            run=$(gh run list --workflow ci.yml --branch "$branch" --limit 1 --json databaseId -q '.[0].databaseId')
+            [ -n "$run" ] && break
+          done
+          if [ -n "$run" ] && gh run watch "$run" --exit-status > /dev/null; then
+            git push -q origin "$branch:main"   # fast-forward; allowed because "check" passed on this commit
+            git push -q origin --delete "$branch"
+            echo "Merged into main."
+          else
+            echo "failed=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Close Dependabot PRs for held packages
+        if: always()
+        run: |
+          gh pr list --author app/dependabot --state open --json number,title > prs.json
+          # "Bump <pkg> from <old> to <new>": close it when <new> is at or above a hold.
+          held=$(node -e '
+            const holds = require("./version-holds.json").holds;
+            for (const pr of require("./prs.json")) {
+              const m = pr.title.match(/[Bb]ump (\S+) from \S+ to (\d+)/);
+              if (m && holds.some((h) => h.package === m[1] && Number(m[2]) >= h.below)) console.log(pr.number);
+            }')
+          for pr in $held; do
+            gh pr close "$pr" --delete-branch --comment "Held in version-holds.json; the weekly auto-upgrade tries it again." || true
+          done
+
+      - name: Open an issue when it needs a person
+        if: failure()
+        run: |
+          {
+            echo "The weekly auto-upgrade could not finish: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            [ -n "${{ steps.ship.outputs.branch }}" ] && echo "Its changes are on branch \`${{ steps.ship.outputs.branch }}\` (CI failed there)." && echo
+            [ -f auto-upgrade-report.md ] && cat auto-upgrade-report.md
+            echo
+            echo "To fix with any AI tool: open this repo and say \"Read AGENTS.md, then fix the auto-upgrade issue (.claude/skills/update-dependencies).\""
+          } > issue.md
+          existing=$(gh issue list --state open --search "Auto-upgrade needs attention in:title" --json number -q '.[0].number')
+          if [ -n "$existing" ]; then gh issue comment "$existing" --body-file issue.md
+          else gh issue create --title "Auto-upgrade needs attention" --body-file issue.md; fi
