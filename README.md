@@ -120,4 +120,16 @@ STARTER-KIT.md        prompts from idea to launch for any AI
 
 Baki shob AI korbe. Tomake shudhu idea bolte hobe, ar plan/design e "ok" dite hobe.
 
-**Update:** kichu korte hobe na, AI-o lagbe na. Protita shombar GitHub nije-i shob package latest kore, test chalay, pass korle merge kore. Kono notun version code bhangle sheta hold kore rakhe, porer shoptahe abar try kore. Kokhono atke gele GitHub ekta issue khulbe ("Auto-upgrade needs attention") ar tomake email dibe.
+**Update:** kichu korte hobe na, AI-o lagbe na.
+
+- Protita shombar GitHub nije-i shob package ar Node LTS update kore, test chalay, ar pass korle `main` e merge kore.
+- "Latest" mane test pass kore emon shobcheye notun version. Kono notun version code bhangle sheta hold e thake (`version-holds.json`, jemon ekhon TypeScript 7), ar protita shoptahe abar try hoy. Pass korle nije-i upgrade hoye hold uthe jay.
+- Kokhono atke gele GitHub ekta issue khulbe ("Auto-upgrade needs attention") ar tomake email dibe.
+
+**GitHub Actions bondho thakle** (jemon account/billing lock): automatic update cholbe na, kintu code ar website-er kono khoti hobe na. Tokhon nijer computer e ei folder e chalao:
+
+```bash
+pnpm auto-upgrade
+```
+
+Tarpor `pnpm test:e2e` pass korle commit kore push koro, ba je kono AI ke bolo: "Run pnpm auto-upgrade, verify, commit and push."
