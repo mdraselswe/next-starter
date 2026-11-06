@@ -1,0 +1,26 @@
+# Fails when a dependency has a new major version that isn't upgraded or held
+# (version-holds.json), or when .nvmrc is behind the newest Node.js LTS.
+# Runs weekly and on every pull request, so going stale can't go unnoticed.
+name: Freshness
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays 03:00 UTC
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm freshness

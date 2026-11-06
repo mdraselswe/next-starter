@@ -1,0 +1,28 @@
+# Weekly update PRs. Patch/minor are grouped and auto-merged when CI passes
+# (workflows/dependabot-automerge.yml); majors come as separate PRs.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    # Supply-chain safety: wait before taking brand-new releases.
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+    # Held majors, mirrored from version-holds.json (keep both in sync).
+    ignore:
+      - dependency-name: typescript
+        versions: [">=7"]
+      - dependency-name: eslint
+        versions: [">=10"]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

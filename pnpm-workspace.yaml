@@ -1,0 +1,9 @@
+# pnpm settings (pnpm reads them from this file).
+# Exact versions in package.json; updates come through Dependabot PRs.
+saveExact: true
+savePrefix: ""
+# Supply-chain safety: skip versions published less than 1 day ago (Dependabot waits 3 days).
+minimumReleaseAge: 1440
+allowBuilds:
+  sharp: false
+  unrs-resolver: false
