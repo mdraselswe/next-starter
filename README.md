@@ -13,6 +13,14 @@ A strict, configurable Next.js starter for new projects. One config folder holds
 
 ## Start a new project
 
+**With AI (recommended).** Open Claude Code in your projects folder (e.g. `E:\Code\Personal`) and say:
+
+> /new-project — a booking site for a small dental clinic
+
+The `new-project` skill (installed in `~/.claude/skills/`, source in `.claude/skills/new-project/`) creates the private repo from this template, updates everything to the latest versions, turns on automatic updates, applies the brand and then plans and builds the product with `STARTER-KIT.md`. It only asks you about the idea and design.
+
+**By hand:**
+
 ```bash
 gh repo create my-app --template mdraselswe/next-starter --private --clone
 ```
@@ -29,17 +37,13 @@ pnpm install
 pnpm setup-project my-app
 ```
 
-`setup-project` renames the package, updates every dependency to its latest version (except the majors held in `version-holds.json`), installs the Playwright browser and runs the full check. On GitHub you can instead click **Use this template → Create a new repository**, clone it, and run the same last two commands.
+```bash
+pnpm github-setup
+```
 
-Then:
+`setup-project` renames the package, updates every dependency to its latest version (except the majors held in `version-holds.json`), installs the Playwright browser and runs the full check. `github-setup` turns on auto-merge and makes CI required on `main` (GitHub doesn't copy settings from a template). Then edit the config ([docs/configuration.md](docs/configuration.md)), pick `pnpm mode static|server`, and give your AI `STARTER-KIT.md` (Prompts 3–4 are already done).
 
-1. Edit `src/config/site.ts` (name, URL, colours, contact, SEO), `src/config/features.ts`, `src/config/fonts.ts`, `src/i18n/messages/en.ts` and `src/content/`. Map of every value: [docs/configuration.md](docs/configuration.md).
-2. Choose how it's built: `pnpm mode static` (default) or `pnpm mode server`.
-3. `pnpm dev` → http://localhost:3000
-4. For a new product, give your AI `STARTER-KIT.md` and say: _"Read AGENTS.md and STARTER-KIT.md. This project was created from next-starter; Prompts 3–4 are done. Run Prompt 0."_
-5. Do the one-time GitHub settings below so updates merge themselves.
-
-Requirements: Node 26 LTS (`.nvmrc`; Node 24 LTS also works) and pnpm (`corepack enable` picks the version in `package.json`).
+Requirements: Node 26 LTS (`.nvmrc`; Node 24 LTS also works), pnpm (`corepack enable`), and the `gh` CLI logged in.
 
 ## Commands
 
@@ -74,23 +78,28 @@ CI builds both, so code stays portable until a project commits to one. Details: 
 - **Server:** `pnpm mode server` removes `vercel.json`; Vercel detects Next.js.
 - Set `NEXT_PUBLIC_SITE_URL` in the host if it differs from `site.url`. Other hosts: build command `pnpm build`; output `out` (static) or a Node server running `pnpm start` (server).
 
-## Staying up to date
+## Staying up to date (no manual reviews)
 
-| Layer                                                | Effect                                                          |
-| ---------------------------------------------------- | --------------------------------------------------------------- |
-| `.github/dependabot.yml`                             | Weekly PRs (npm + Actions), 3-day cooldown, patch/minor grouped |
-| `.github/workflows/dependabot-automerge.yml`         | Patch/minor PRs merge themselves after CI passes                |
-| `.github/workflows/freshness.yml` + `pnpm freshness` | Fails weekly/on PRs if a major is behind without a hold         |
-| `version-holds.json`                                 | Majors deliberately held back, with the reason                  |
-| pnpm `minimumReleaseAge`                             | Never installs a version published less than a day ago          |
+| Layer                                                | What it does                                                                                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `.github/dependabot.yml`                             | Weekly PRs for npm and Actions, 3-day cooldown, patch/minor grouped                                                                     |
+| `.github/workflows/dependabot-automerge.yml`         | Every Dependabot PR (majors too) merges itself once CI passes                                                                           |
+| Ruleset "main: CI must pass" (`pnpm github-setup`)   | Nothing reaches `main` through a PR with a red `check`                                                                                  |
+| Weekly Claude routine → `.claude/skills/maintain`    | Fixes Dependabot PRs that fail CI, takes held/missed majors, moves Node LTS, refreshes template defaults; pushes a `maintain/**` branch |
+| `.github/workflows/maintain-pr.yml`                  | Turns a `maintain/**` push into a PR with auto-merge                                                                                    |
+| `.github/workflows/freshness.yml` + `pnpm freshness` | Fails weekly if a major or Node LTS is behind without a hold                                                                            |
+| `version-holds.json`                                 | Majors deliberately held back, with the reason (the routine re-checks them)                                                             |
+| pnpm `minimumReleaseAge`                             | Never installs a version published less than a day ago                                                                                  |
 
-Major upgrades: [docs/updating.md](docs/updating.md) (codemods first, then `pnpm check`).
+Safety net: CI runs typecheck, lint, unit tests, both render-mode builds and Playwright + axe before anything merges. An update that breaks the build just waits (red) until the routine fixes it.
 
-### One-time GitHub settings (per repo)
+Manual major upgrades: [docs/updating.md](docs/updating.md).
 
-1. **Settings → General → Pull Requests:** tick **Allow auto-merge**.
-2. **Settings → Branches → Add branch ruleset** (or classic protection) for `main`: **Require status checks to pass**, add the **check** job (CI). Without a required check, auto-merge would merge immediately.
-3. This template repo only: **Settings → General → Template repository** ✓.
+### Setup (once per repo)
+
+- `pnpm github-setup` — auto-merge, required `check`, Actions may open PRs.
+- Template repo only: **Settings → General → Template repository** ✓ (already on for next-starter).
+- Optional AI maintenance: GitHub connected to claude.ai (https://claude.ai/connect-github), then a weekly routine at https://claude.ai/code/routines with the prompt _"Follow .claude/skills/maintain/SKILL.md."_
 
 ## Folder map
 
@@ -123,8 +132,10 @@ STARTER-KIT.md        prompts from idea to launch for any AI
 
 ## Bangla quick guide
 
-1. Notun project: upore "Start a new project" er 4 ta command chalao (`gh repo create … --template`, `cd`, `pnpm install`, `pnpm setup-project <name>`).
-2. Shudhu ei file gulo bodlao: `src/config/site.ts` (naam, rong, URL), `features.ts`, `fonts.ts`, `src/i18n/messages/en.ts`, `src/content/`.
-3. Static site hole `pnpm mode static`, server/database lagle `pnpm mode server`.
-4. AI ke `STARTER-KIT.md` dao, Prompt 0 theke shuru koro.
-5. GitHub e ekbar "Allow auto-merge" ar `main` e required check (CI) on koro. Tarpor patch/minor update nije nije merge hobe; major update PR hishebe ashbe, ar purono hole freshness check fail kore janabe.
+**Notun project:** Claude Code khulo `E:\Code\Personal` folder e, tarpor likho:
+
+> /new-project — amar idea ekhane (jemon: "ekta dental clinic er booking site")
+
+Baki shob AI korbe: GitHub e private repo, latest version e setup, auto-update on, design ar page banano. Tomake shudhu idea ar design niye 1–2 ta proshner uttor dite hobe.
+
+**Update:** kichu korte hobe na. Protita update PR CI pass korle nije nije merge hoy. Kono update code bhenge dile, protita mongolbar Claude-er weekly routine sheta thik kore dey. Kichu atke gele routine-er report e lekha thakbe.

@@ -1,6 +1,7 @@
-# Turns on auto-merge for Dependabot patch/minor PRs. GitHub merges them only
-# after the required CI checks pass (set them in branch protection, see README).
-# Major updates stay open for a person (or AI) to review.
+# Turns on auto-merge for every Dependabot PR (patch, minor and major).
+# GitHub merges it only after the required "check" job passes (ruleset on main),
+# so a breaking update stays open with a red check until it is fixed (the weekly
+# maintenance routine, .claude/skills/maintain, does that).
 name: Dependabot auto-merge
 
 on: pull_request
@@ -14,10 +15,8 @@ jobs:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - id: meta
-        uses: dependabot/fetch-metadata@v3
-      - if: steps.meta.outputs.update-type != 'version-update:semver-major'
-        run: gh pr merge --auto --squash "$PR_URL"
+      - uses: dependabot/fetch-metadata@v3
+      - run: gh pr merge --auto --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -24,6 +24,7 @@
     "mode": "node scripts/set-mode.ts",
     "freshness": "node scripts/freshness.ts",
     "setup-project": "node scripts/setup-project.ts",
+    "github-setup": "node scripts/github-setup.ts",
     "prepare": "husky"
   },
   "dependencies": {

@@ -49,7 +49,7 @@ Stack: Next.js 16 (App Router, Turbopack, React Compiler, typed routes) · React
 
 ## Skills
 
-`.claude/skills/`: `add-page`, `add-feature`, `rebrand`, `update-dependencies`. Other AI tools: read the same `SKILL.md` files.
+`.claude/skills/`: `new-project`, `add-page`, `add-feature`, `rebrand`, `update-dependencies`, `maintain` (weekly unattended updates). Other AI tools: read the same `SKILL.md` files.
 
 ## Definition of done
 

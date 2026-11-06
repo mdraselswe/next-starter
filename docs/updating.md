@@ -5,7 +5,7 @@ No AI is needed for most updates. Four layers work together:
 | Layer                                                            | What it does                                                                                                           | Your part                              |
 | ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
 | **Dependabot** (`.github/dependabot.yml`)                        | Weekly PRs for npm packages and GitHub Actions; waits 3 days after a release (cooldown); patch/minor grouped in one PR | none                                   |
-| **Auto-merge** (`workflows/dependabot-automerge.yml`)            | Patch/minor PRs merge themselves once CI is green                                                                      | one-time repo settings (README)        |
+| **Auto-merge** (`workflows/dependabot-automerge.yml`)            | Every Dependabot PR (majors too) merges itself once CI is green                                                        | `pnpm github-setup`                    |
 | **Freshness gate** (`pnpm freshness`, `workflows/freshness.yml`) | Fails weekly and on PRs if a major is behind without a hold, or Node LTS moved                                         | upgrade, or add a hold with the reason |
 | **setup-project** (`pnpm setup-project <name>`)                  | A new project from this template starts on today's versions                                                            | run once                               |
 
