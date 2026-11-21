@@ -9,7 +9,8 @@ const listeners = new Set<() => void>();
 
 const isMode = (value: unknown): value is ThemeMode => THEME_MODES.includes(value as ThemeMode);
 
-function read(): ThemeMode {
+/** The saved mode, or the default. */
+export function readTheme(): ThemeMode {
   const saved = readStorage<unknown>(STORAGE_KEYS.theme, DEFAULT_MODE);
   return isMode(saved) ? saved : DEFAULT_MODE;
 }
@@ -35,10 +36,10 @@ export function useTheme() {
       listeners.add(cb);
       return () => listeners.delete(cb);
     },
-    read,
+    readTheme,
     () => DEFAULT_MODE,
   );
   const cycle = () =>
-    setMode(THEME_MODES[(THEME_MODES.indexOf(read()) + 1) % THEME_MODES.length] ?? DEFAULT_MODE);
+    setMode(THEME_MODES[(THEME_MODES.indexOf(readTheme()) + 1) % THEME_MODES.length] ?? DEFAULT_MODE);
   return { mode, setMode, cycle };
 }

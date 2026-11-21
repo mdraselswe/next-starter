@@ -13,7 +13,8 @@ import {
 import { Fragment, useEffect, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { features, site } from "@/config";
-import { t, type MessageKey } from "@/i18n";
+import type { MessageKey } from "@/i18n";
+import { useT } from "@/i18n/client";
 import { readStorage, STORAGE_KEYS, writeStorage } from "@/lib/storage";
 import { hideInstallCard, showInstallCard, useInstallCardOpen } from "../install-store";
 import type { InstallPlatform } from "../platform";
@@ -67,6 +68,7 @@ function dismiss() {
  * one, otherwise shows the steps for this device.
  */
 export function InstallCard() {
+  const t = useT();
   const { platform, install } = useInstall();
   const open = useInstallCardOpen();
   const titleId = useId();
@@ -154,6 +156,7 @@ export function InstallCard() {
 
 /** Footer link that opens the install card; hidden once installed. */
 export function InstallLink({ className }: { className?: string }) {
+  const t = useT();
   const { platform } = useInstall();
   if (!platform || platform === "installed") return null;
   return (

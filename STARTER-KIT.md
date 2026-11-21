@@ -12,7 +12,7 @@ Ei file ta jekono AI ke diye **scratch theke** ekta modern, strict, latest-versi
 4. Ekshathe shob prompt dibe na. Ekta prompt = ekta gate.
 5. Project cholakalin proti 1–2 mash por, ba boro feature er age, **Prompt 10 (Freshness audit)** chalao.
 
-> **next-starter theke shuru korle (recommended):** foundation already ready. Prompt 3 ar 4 skip koro (AI shudhu verify korbe), Prompt 2 te stack already fixed (Next.js), Prompt 5 e shudhu `src/config/site.ts` + `src/app/globals.css` tokens bodlabe. Ei repo te Configuration map er actual file: [docs/configuration.md](docs/configuration.md). AI ke bolo: _"Read AGENTS.md and STARTER-KIT.md. This project was created from next-starter; Prompts 3–4 are done. Run Prompt 0."_
+> **next-starter theke shuru korle (recommended):** foundation already ready. Prompt 3 ar 4 skip koro (AI shudhu verify korbe), Prompt 2 te stack already fixed (Next.js), Prompt 1 er direction gulo `/dev/directions` e knob value hisebe banabe (`src/app/[locale]/dev/directions/directions.ts`), Prompt 5 e chosen ta `src/config/design.ts` + `site.ts` + `fonts.ts` e jabe, sathe project er nijer signature. Ei repo te Configuration map er actual file: [docs/configuration.md](docs/configuration.md). AI ke bolo: _"Read AGENTS.md and STARTER-KIT.md. This project was created from next-starter; Prompts 3–4 are done. Run Prompt 0."_
 
 > Prompts English e, karon shob AI English instruction shobcheye nikhut follow kore. `{{…}}` gulo nijer value diye bodlabe.
 > Ei file e kono library er version number ba "ekhon kon ta latest" lekha **ichchha kore** rakha hoyni (shudhu niche dated Snapshot e ache). AI proti bar registry ar docs theke verify korbe, tai file ta purono hobe na.
@@ -109,6 +109,12 @@ Read docs/01-product-spec.md and the PROJECT PROFILE (brand, design references).
 3. Recommend one and say why it fits the users and the brand.
 Rules: inspiration only — never copy a site's layout, art, copy or brand. Fonts and assets
 must be licensed for this use.
+If the project was made from next-starter: express each direction as design knobs
+(src/config/design.ts: radius, controlShape, border, elevation, density, motion, texture,
+neutral tint) + primary colour + fonts + 1–2 signature ideas, write all three into
+src/app/[locale]/dev/directions/directions.ts (replace the examples; never reuse them),
+and tell me to compare them on /dev/directions. Directions must differ from each other
+and from the starter's defaults.
 STOP and wait for me to pick (I may mix directions).
 ```
 
@@ -374,6 +380,8 @@ Multi-brand (white-label) option: put the brand-specific files under `src/brands
 
 ## Standard folder structure (Next.js, feature-based, ports/adapters)
 
+> **next-starter projects:** the live version of this layout, with the exact names used there (`app/[locale]`, `features/<domain>/server`, `infrastructure/<vendor>`), is `docs/structure.md`. Follow that file; the tree below is the tool-agnostic summary.
+
 ```text
 .
 ├─ STARTER-KIT.md  AGENTS.md  CLAUDE.md  README.md  .env.example  .nvmrc  .editorconfig
@@ -410,21 +418,22 @@ Use these for **inspiration and building blocks**, never to copy a whole site. P
 
 **Component code (copy in, then adapt to our tokens)**
 
-| Site                                                                    | Best for                                                    | Licence (checked 2026-11)                                     |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------- |
-| [shadcn/ui](https://ui.shadcn.com)                                      | Accessible base components, blocks, CLI + registries        | MIT                                                           |
-| [Base UI](https://base-ui.com)                                          | Unstyled accessible primitives (shadcn's default base now)  | MIT                                                           |
-| [21st.dev](https://21st.dev)                                            | Marketplace of community shadcn-style components and blocks | per component                                                 |
-| [Magic UI](https://magicui.design)                                      | Animated landing-page components (Tailwind + Motion)        | MIT                                                           |
-| [React Bits](https://reactbits.dev)                                     | Text, background and cursor effects; browse by effect       | MIT + Commons Clause: OK in apps, don't resell the components |
-| [Aceternity UI](https://ui.aceternity.com)                              | Bold hero sections, 3D/parallax effects                     | free + paid tiers                                             |
-| [Uiverse](https://uiverse.io)                                           | Single CSS/Tailwind elements: buttons, loaders, toggles     | MIT                                                           |
-| [Origin UI / coss ui](https://coss.com/ui)                              | Large set of polished form and app components               | check site                                                    |
-| [Motion Primitives](https://motion-primitives.com)                      | Small, tasteful motion building blocks                      | MIT                                                           |
-| [Animate UI](https://animate-ui.com)                                    | Animated versions of shadcn primitives                      | check repo                                                    |
-| [Kokonut UI](https://kokonutui.com), [Cult UI](https://www.cult-ui.com) | Distinctive animated cards, dynamic-island style pieces     | MIT / check site                                              |
-| [shadcnblocks](https://www.shadcnblocks.com)                            | Ready marketing and app page sections                       | free + paid                                                   |
-| [registry.directory](https://registry.directory)                        | Finder for every public shadcn registry                     | —                                                             |
+| Site                                                                    | Best for                                                                 | Licence (checked 2026-11)                                     |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| [shadcn/ui](https://ui.shadcn.com)                                      | Accessible base components, blocks, CLI + registries                     | MIT                                                           |
+| [Base UI](https://base-ui.com)                                          | Unstyled accessible primitives (shadcn's default base now)               | MIT                                                           |
+| [21st.dev](https://21st.dev)                                            | Marketplace of community shadcn-style components and blocks              | per component                                                 |
+| [Magic UI](https://magicui.design)                                      | Animated landing-page components (Tailwind + Motion)                     | MIT                                                           |
+| [React Bits](https://reactbits.dev)                                     | Text, background and cursor effects; browse by effect                    | MIT + Commons Clause: OK in apps, don't resell the components |
+| [Aceternity UI](https://ui.aceternity.com)                              | Bold hero sections, 3D/parallax effects                                  | free + paid tiers                                             |
+| [Uiverse](https://uiverse.io)                                           | Single CSS/Tailwind elements: buttons, loaders, toggles                  | MIT                                                           |
+| [Motion Brew](https://motion-brew.com)                                  | Interaction-rich React components (cards, forms, charts) with AI prompts | check site                                                    |
+| [Origin UI / coss ui](https://coss.com/ui)                              | Large set of polished form and app components                            | check site                                                    |
+| [Motion Primitives](https://motion-primitives.com)                      | Small, tasteful motion building blocks                                   | MIT                                                           |
+| [Animate UI](https://animate-ui.com)                                    | Animated versions of shadcn primitives                                   | check repo                                                    |
+| [Kokonut UI](https://kokonutui.com), [Cult UI](https://www.cult-ui.com) | Distinctive animated cards, dynamic-island style pieces                  | MIT / check site                                              |
+| [shadcnblocks](https://www.shadcnblocks.com)                            | Ready marketing and app page sections                                    | free + paid                                                   |
+| [registry.directory](https://registry.directory)                        | Finder for every public shadcn registry                                  | —                                                             |
 
 **Inspiration (look, don't copy)**
 
@@ -441,17 +450,18 @@ Use these for **inspiration and building blocks**, never to copy a whole site. P
 
 **Theme, colour, type, assets**
 
-| Site                                                                             | Use                                                      |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [tweakcn](https://tweakcn.com)                                                   | Visual shadcn/Tailwind theme editor, exports CSS vars    |
-| [Realtime Colors](https://www.realtimecolors.com)                                | Preview a palette and font pair on a real layout         |
-| [oklch.com](https://oklch.com)                                                   | Pick/convert OKLCH colours                               |
-| [Fontshare](https://www.fontshare.com), [Google Fonts](https://fonts.google.com) | Free, licensed fonts                                     |
-| [Typewolf](https://www.typewolf.com), [Fontpair](https://fontpair.co)            | Font pairing ideas                                       |
-| [Lucide](https://lucide.dev), [Phosphor](https://phosphoricons.com)              | Icon sets                                                |
-| [Haikei](https://haikei.app)                                                     | SVG blobs, waves, gradients                              |
-| [Unsplash](https://unsplash.com)                                                 | Placeholder photos (credit them; replace with real ones) |
-| [Motion](https://motion.dev), [GSAP](https://gsap.com)                           | Animation libraries (verify current licence and API)     |
+| Site                                                                             | Use                                                                                                                     |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [tweakcn](https://tweakcn.com)                                                   | Visual shadcn/Tailwind theme editor, exports CSS vars                                                                   |
+| [Realtime Colors](https://www.realtimecolors.com)                                | Preview a palette and font pair on a real layout                                                                        |
+| [oklch.com](https://oklch.com)                                                   | Pick/convert OKLCH colours                                                                                              |
+| [Fontshare](https://www.fontshare.com), [Google Fonts](https://fonts.google.com) | Free, licensed fonts                                                                                                    |
+| [Typewolf](https://www.typewolf.com), [Fontpair](https://fontpair.co)            | Font pairing ideas                                                                                                      |
+| [Lucide](https://lucide.dev), [Phosphor](https://phosphoricons.com)              | Icon sets                                                                                                               |
+| [Liniqo](https://liniqo.com)                                                     | Hairline illustrations (static, pointer-reactive, scroll) with your accent colour; MCP for agents; paid with a free set |
+| [Haikei](https://haikei.app)                                                     | SVG blobs, waves, gradients                                                                                             |
+| [Unsplash](https://unsplash.com)                                                 | Placeholder photos (credit them; replace with real ones)                                                                |
+| [Motion](https://motion.dev), [GSAP](https://gsap.com)                           | Animation libraries (verify current licence and API); how we use them: docs/motion.md                                   |
 
 **Design rules that keep it modern without going stale**
 

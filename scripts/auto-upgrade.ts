@@ -8,7 +8,8 @@
  *    passes the checks → kept (a hold that is no longer needed is removed);
  *    fails → rolled back and held in version-holds.json + Dependabot ignore,
  *    and tried again on the next run.
- * "Checks" = typecheck, lint, unit tests, and a build in both render modes.
+ * "Checks" = typecheck, lint, unit tests, and a build in both render modes
+ * (only the configured one when site.renderLocked).
  * Writes auto-upgrade-report.md (used by .github/workflows/auto-upgrade.yml).
  */
 import { execSync } from "node:child_process";
@@ -52,8 +53,8 @@ const verify = () =>
   run("pnpm typecheck") &&
   run("pnpm lint") &&
   run("pnpm test") &&
-  run("pnpm build", { RENDER_MODE: "static" }) &&
-  run("pnpm build", { RENDER_MODE: "server" });
+  run("pnpm build:other") &&
+  run("pnpm build");
 
 /** Sets exact versions in package.json and installs. Returns false if the install fails. */
 function setVersions(versions: Record<string, string>) {

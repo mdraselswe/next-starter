@@ -3,7 +3,10 @@
  * 1. Flattens prefetch segment files on Windows (Next 16 writes
  *    `about/__next.about/__PAGE__.txt` there, the client asks for
  *    `about/__next.about.__PAGE__.txt`). No-op on Linux/macOS.
- * 2. Writes out/sw.js that precaches every exported file, so the whole site
+ * 2. Moves the default locale to the root: out/bn/about/ → out/about/, so the
+ *    default language has no URL prefix (server mode does this with a rewrite;
+ *    docs/adr/0004-i18n-routing.md). Other languages stay in out/<locale>/.
+ * 3. Writes out/sw.js that precaches every exported file, so the whole site
  *    works offline after the first visit. The cache version is a hash of the build.
  */
 import { createHash } from "node:crypto";
@@ -13,11 +16,13 @@ import {
   readFileSync,
   renameSync,
   rmdirSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
 import { features, site } from "../src/config/index.ts";
+import { DEFAULT_LOCALE, PREFIXED_LOCALES, privatePathVariants } from "../src/config/locale.ts";
 
 const OUT = path.resolve("out");
 if (site.render !== "static" || !existsSync(OUT)) process.exit(0);
@@ -41,8 +46,61 @@ function fixSegments(dir: string) {
 }
 fixSegments(OUT);
 
+/** Moves everything in `from` into `to`, merging folders; files from `from` win. */
+function moveInto(from: string, to: string) {
+  for (const name of readdirSync(from)) {
+    const src = path.join(from, name);
+    const dest = path.join(to, name);
+    if (statSync(src).isDirectory() && existsSync(dest) && statSync(dest).isDirectory()) {
+      moveInto(src, dest);
+    } else {
+      rmSync(dest, { recursive: true, force: true });
+      renameSync(src, dest);
+    }
+  }
+  rmdirSync(from);
+}
+/**
+ * The moved pages still name their URL as /<default>/… in the router payload
+ * ("c":["","bn","about",""]). Left alone, the client router would treat the
+ * page as /bn/about/ (wrong links, a refetch of a URL that no longer exists).
+ * Drop the locale from that canonical path, as server mode does for rewrites.
+ */
+const plain = `"c":["","${DEFAULT_LOCALE}",`;
+const escaped = `\\"c\\":[\\"\\",\\"${DEFAULT_LOCALE}\\",`;
+
+function fixCanonical(dir: string): number {
+  let fixed = 0;
+  for (const name of readdirSync(dir)) {
+    const full = path.join(dir, name);
+    if (statSync(full).isDirectory()) {
+      if (name !== "_next" && !PREFIXED_LOCALES.includes(name)) fixed += fixCanonical(full);
+      continue;
+    }
+    if (!/.(html|txt)$/.test(name)) continue;
+    const before = readFileSync(full, "utf8");
+    const after = before.replaceAll(plain, `"c":["",`).replaceAll(escaped, `\\"c\\":[\\"\\",`);
+    if (after !== before) {
+      writeFileSync(full, after);
+      fixed += 1;
+    }
+  }
+  return fixed;
+}
+
+const defaultDir = path.join(OUT, DEFAULT_LOCALE);
+if (existsSync(defaultDir)) {
+  moveInto(defaultDir, OUT);
+  const home = path.join(OUT, "index.html");
+  if (fixCanonical(OUT) === 0 || readFileSync(home, "utf8").includes(escaped)) {
+    throw new Error(
+      "postbuild: could not rewrite the router payload of the default locale. Next.js may have changed its format; see docs/adr/0004-i18n-routing.md.",
+    );
+  }
+}
+
 if (features.pwa) {
-  const SKIP = new Set(["sw.js", "robots.txt", "sitemap.xml", "404.html"]);
+  const SKIP = new Set(["sw.js", "robots.txt", "sitemap.xml", "404.html", "_headers"]);
   const SKIP_DIRS = ["404/", "_not-found/"];
   const files = (dir: string, base = ""): string[] =>
     readdirSync(dir).flatMap((name) => {
@@ -66,7 +124,8 @@ if (features.pwa) {
 
   const sw = readFileSync(path.resolve("scripts/sw.template.js"), "utf8")
     .replace("__VERSION__", version)
-    .replace("__PRECACHE__", JSON.stringify(all.map(urlFor)));
+    .replace("__PRECACHE__", JSON.stringify(all.map(urlFor)))
+    .replace("__PRIVATE__", JSON.stringify(privatePathVariants()));
   writeFileSync(path.join(OUT, "sw.js"), sw);
   process.stdout.write(`postbuild: sw.js precaches ${all.length} files (version ${version})\n`);
 }

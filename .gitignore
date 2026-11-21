@@ -52,6 +52,7 @@ next-env.d.ts
 /public/sitemap.xml
 /public/manifest.webmanifest
 /public/sw.js
+/public/_headers
 
 !.env.example
 auto-upgrade-report.md

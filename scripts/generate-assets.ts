@@ -13,7 +13,9 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { features, site } from "../src/config/index.ts";
+import { DEFAULT_LOCALE, LOCALES, localeDir, localePath, privatePathVariants } from "../src/config/locale.ts";
 import { pageUrl, ROUTES, SITEMAP_ROUTES } from "../src/config/routes.ts";
+import { SECURITY_HEADERS } from "../src/config/security.ts";
 import { toHexColor } from "./lib/color.ts";
 
 const PUBLIC = path.resolve("public");
@@ -23,14 +25,60 @@ mkdirSync(ICONS, { recursive: true });
 const write = (file: string, content: string | Buffer) => writeFileSync(path.join(PUBLIC, file), content);
 const abs = (route: string) => new URL(pageUrl(route), `${site.url}/`).toString();
 
-// robots.txt + sitemap.xml
-write("robots.txt", `User-agent: *\nAllow: /\n\nSitemap: ${site.url}/sitemap.xml\n`);
+// robots.txt: private and dev paths disallowed in every language.
+const DEV_PATHS = ["/dev"];
+const disallow = privatePathVariants([...site.privatePaths, ...DEV_PATHS]).map((p) => `Disallow: ${p}`);
+write(
+  "robots.txt",
+  ["User-agent: *", "Allow: /", ...disallow, "", `Sitemap: ${site.url}/sitemap.xml`, ""].join("\n"),
+);
+
+// sitemap.xml: every page in every language, with hreflang alternates.
+const alternates = (route: string) =>
+  LOCALES.length > 1
+    ? [
+        ...LOCALES.map(
+          (l) => `<xhtml:link rel="alternate" hreflang="${l}" href="${abs(localePath(l, route))}"/>`,
+        ),
+        `<xhtml:link rel="alternate" hreflang="x-default" href="${abs(localePath(DEFAULT_LOCALE, route))}"/>`,
+      ]
+    : [];
+const urls = SITEMAP_ROUTES.flatMap((r) =>
+  LOCALES.map((l) =>
+    [
+      "  <url>",
+      `    <loc>${abs(localePath(l, r))}</loc>`,
+      ...alternates(r).map((a) => `    ${a}`),
+      "    <changefreq>weekly</changefreq>",
+      `    <priority>${r === ROUTES.home ? "1.0" : "0.7"}</priority>`,
+      "  </url>",
+    ].join("\n"),
+  ),
+);
 write(
   "sitemap.xml",
-  `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${SITEMAP_ROUTES.map(
-    (r) =>
-      `  <url><loc>${abs(r)}</loc><changefreq>weekly</changefreq><priority>${r === ROUTES.home ? "1.0" : "0.7"}</priority></url>`,
-  ).join("\n")}\n</urlset>\n`,
+  [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+    ...urls,
+    "</urlset>",
+    "",
+  ].join("\n"),
+);
+
+// Security headers for static hosts that read public/_headers (Cloudflare, Netlify). Server mode sends them itself.
+const NO_CACHE = "  Cache-Control: public, max-age=0, must-revalidate";
+write(
+  "_headers",
+  [
+    "/*",
+    ...SECURITY_HEADERS.map((h) => `  ${h.key}: ${h.value}`),
+    "/sw.js",
+    NO_CACHE,
+    "/manifest.webmanifest",
+    NO_CACHE,
+    "",
+  ].join("\n"),
 );
 
 // App icon: a rounded tile in the brand colour with the first letter of the short name.
@@ -68,8 +116,8 @@ if (features.pwa) {
     name: site.name,
     short_name: site.shortName,
     description: site.description,
-    lang: site.locale,
-    dir: site.dir,
+    lang: DEFAULT_LOCALE,
+    dir: localeDir(DEFAULT_LOCALE),
     start_url: "/",
     scope: "/",
     display: "standalone",
@@ -86,7 +134,10 @@ if (features.pwa) {
   const template = readFileSync(path.resolve("scripts/sw.template.js"), "utf8");
   write(
     "sw.js",
-    template.replace("__VERSION__", `runtime-${Date.now()}`).replace("__PRECACHE__", JSON.stringify(["/"])),
+    template
+      .replace("__VERSION__", `runtime-${Date.now()}`)
+      .replace("__PRECACHE__", JSON.stringify(["/"]))
+      .replace("__PRIVATE__", JSON.stringify(privatePathVariants())),
   );
 } else {
   rmSync(path.join(PUBLIC, "manifest.webmanifest"), { force: true });
@@ -94,5 +145,5 @@ if (features.pwa) {
 }
 
 process.stdout.write(
-  `generate-assets: robots, sitemap, icons${features.pwa ? ", manifest, sw" : ""} (${site.render} mode)\n`,
+  `generate-assets: robots, sitemap, _headers, icons${features.pwa ? ", manifest, sw" : ""} (${site.render} mode)\n`,
 );

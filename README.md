@@ -5,8 +5,10 @@ A strict, configurable Next.js starter for new projects. One config folder holds
 - **Next.js 16** App Router · Turbopack · React Compiler · typed routes · Cache Components (server mode)
 - **React 19**, **TypeScript 6** strict (`noUncheckedIndexedAccess`), **Tailwind CSS 4**, **shadcn/ui on Base UI**, **zod 4**
 - **Config first:** brand, colours, fonts, text, content, features and env in `src/config`, `src/i18n`, `src/content`
-- **Two render modes:** `static` (plain files, host anywhere, fully offline) or `server` (Server Actions, Cache Components); one command switches
-- **Ready parts:** header with mobile menu, footer, light/dark/system theme with no flash, 404, error and loading states, SEO (metadata, sitemap, robots), optional PWA (manifest, generated app icons, offline, install instructions for iOS/Android/desktop)
+- **Languages:** any set, chosen at setup (`pnpm locales bn en`); default at `/`, others at `/<code>/`, switcher, hreflang sitemap, typed UI text per language, `Intl` formatting in the site's time zone and currency, Noto Sans Bengali for Bangla
+- **Two render modes:** `static` (plain files, host anywhere, fully offline) or `server` (Server Actions, Cache Components); one command switches, `--lock` when a project needs the server
+- **Hosts:** Vercel or Cloudflare config written by `pnpm mode … --host`; security headers in both modes
+- **Ready parts:** header with mobile menu, footer, light/dark/system theme with no flash, animated 404 and error pages (pointer parallax, retry that waits for the connection), loading states, SEO (metadata, sitemap, robots), optional PWA (manifest, generated app icons, offline, install instructions for iOS/Android/desktop; private paths never cached), status colour tokens, a `/dev` design-system preview, design knobs so every project gets its own look (`src/config/design.ts`: radius, border, elevation, density, motion, texture, grey tint; three directions compared live on `/dev/directions`; [docs/design-system.md](docs/design-system.md)), a motion kit (tokens, scroll reveal, SVG draw, page transitions with View Transitions, pointer spotlight, number ticker; [docs/motion.md](docs/motion.md)), animated components (dialog, sheet, popover, select, switch, tabs, toasts at any position), skeletons that hand over smoothly ([docs/loading.md](docs/loading.md)), an offline / back-online banner
 - **Quality:** ESLint (import boundaries, no `process.env` outside config), Prettier, Vitest, Playwright on desktop + mobile with axe accessibility checks, husky + lint-staged + commitlint
 - **Stays current:** Dependabot (3-day cooldown), auto-merge for patch/minor on green CI, a freshness gate that fails when a major or Node LTS is behind, `pnpm setup-project` that starts new projects on today's versions
 - **AI-ready:** `AGENTS.md`, `CLAUDE.md`, skills in `.claude/skills/`, and `STARTER-KIT.md` (prompts from idea to launch)
@@ -26,18 +28,20 @@ Requirements: Node 26 LTS (`.nvmrc`; Node 24 LTS also works), pnpm (`corepack en
 
 ## Commands
 
-| Command                         | What it does                                                            |
-| ------------------------------- | ----------------------------------------------------------------------- |
-| `pnpm dev`                      | Dev server (generates config-driven assets first)                       |
-| `pnpm build`                    | Production build: `out/` in static mode, `.next/` in server mode        |
-| `pnpm start`                    | Serve the production build in the current mode                          |
-| `pnpm check`                    | Typecheck, lint, format check, unit tests, build. Run before committing |
-| `pnpm test` / `pnpm test:watch` | Unit tests (Vitest)                                                     |
-| `pnpm test:e2e`                 | Playwright + axe on the production build (run `pnpm build` first)       |
-| `pnpm mode static\|server`      | Switch render mode (updates `site.ts` and `vercel.json`)                |
-| `pnpm freshness`                | Fail if a dependency major or Node LTS is behind (CI runs it weekly)    |
-| `pnpm setup-project <name>`     | First command in a new project                                          |
-| `npx shadcn@latest add <name>`  | Add a shadcn/ui component                                               |
+| Command                           | What it does                                                               |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| `pnpm dev`                        | Dev server (generates config-driven assets first)                          |
+| `pnpm build`                      | Production build: `out/` in static mode, `.next/` in server mode           |
+| `pnpm start`                      | Serve the production build in the current mode                             |
+| `pnpm check`                      | Typecheck, lint, format check, unit tests, build. Run before committing    |
+| `pnpm test` / `pnpm test:watch`   | Unit tests (Vitest)                                                        |
+| `pnpm test:e2e`                   | Playwright + axe on the production build (run `pnpm build` first)          |
+| `pnpm mode static\|server`        | Render mode; `--lock`, `--host vercel\|cloudflare\|other` (docs/deploy.md) |
+| `pnpm locales <default> [others]` | Languages, e.g. `pnpm locales bn en`                                       |
+| `pnpm build:other`                | Build the other render mode (skipped when locked)                          |
+| `pnpm freshness`                  | Fail if a dependency major or Node LTS is behind (CI runs it weekly)       |
+| `pnpm setup-project <name>`       | First command in a new project                                             |
+| `npx shadcn@latest add <name>`    | Add a shadcn/ui component                                                  |
 
 ## Render modes
 
@@ -49,7 +53,7 @@ Requirements: Node 26 LTS (`.nvmrc`; Node 24 LTS also works), pnpm (`corepack en
 | Cache Components (`"use cache"`), Partial Prefetching | no (not supported in export) | yes                     |
 | Offline (PWA)                                         | whole site precached         | pages cached as visited |
 
-CI builds both, so code stays portable until a project commits to one. Details: [docs/adr/0001-render-modes.md](docs/adr/0001-render-modes.md).
+CI builds both, so code stays portable until a project commits to one with `pnpm mode server --lock`. Details: [docs/adr/0001-render-modes.md](docs/adr/0001-render-modes.md), [0006](docs/adr/0006-render-lock-hosts-headers.md).
 
 ## Deploy (Vercel)
 
@@ -84,12 +88,16 @@ New projects copy all of this, and `setup-project` runs the auto-upgrade first, 
 
 ```text
 src/
-  app/                routes only: layout, pages, loading, error, not-found
+  app/[locale]/       routes only: layout, pages, loading, error, not-found, dev (preview)
+  app/global-not-found.tsx  404 outside [locale]
+  app/global-error.tsx      error page when the root layout fails
   config/             site.ts ✏️, features.ts ✏️, fonts.ts ✏️, routes.ts, navigation.ts, env.ts, schema.ts
   content/            page content ✏️
-  i18n/               t() and messages/<locale>.ts ✏️
+  i18n/               translator/formatter, getT (server), useT (client), messages/<locale>.ts ✏️
   components/ui/      shadcn/ui primitives + button-link, rich-text
   components/layout/  header, footer, theme script/toggle, page shell
+  components/motion/  page transition, suspense reveal, spotlight, number ticker
+  components/illustrations/  hairline SVG illustrations
   features/<name>/    self-contained features with an index.ts (pwa)
   hooks/  lib/        shared hooks and pure helpers
 scripts/              generate-assets, postbuild, set-mode, freshness, setup-project, start
@@ -104,6 +112,7 @@ STARTER-KIT.md        prompts from idea to launch for any AI
 ## Docs
 
 - [Configuration map](docs/configuration.md)
+- [Code structure](docs/structure.md) · [Design system](docs/design-system.md) · [Motion and illustration](docs/motion.md) · [Loading](docs/loading.md) · [Deploy](docs/deploy.md) · [Security](docs/security.md)
 - [Keeping versions current](docs/updating.md)
 - [Decisions (ADRs)](docs/adr/)
 - [AGENTS.md](AGENTS.md): rules for AI agents and humans
@@ -118,7 +127,11 @@ STARTER-KIT.md        prompts from idea to launch for any AI
 
    > Read `E:\Code\Personal\next-starter\NEW-PROJECT.md` and follow it. Idea: (tomar idea)
 
-Baki shob AI korbe. Tomake shudhu idea bolte hobe, ar plan/design e "ok" dite hobe.
+Baki shob AI korbe. Tomake shudhu idea, bhasha (jemon "Bangla, sathe English"), ar plan/design e "ok" dite hobe.
+
+**Bhasha:** `pnpm locales bn en` mane Bangla `/` e, English `/en/` e. Shudhu English hole `pnpm locales en`. UI lekha `src/i18n/messages/` e, page er lekha `src/content/` e protita bhashar jonno.
+
+**Login/dashboard wala app:** `pnpm mode server --lock --host cloudflare`. Account/dashboard er path `privatePaths` e rakho, tahole offline cache e kokhono jabe na.
 
 **Update:** kichu korte hobe na, AI-o lagbe na.
 

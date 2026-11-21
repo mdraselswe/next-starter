@@ -1,3 +1,4 @@
+import { InlineScript } from "@/components/ui/inline-script";
 import { PROMPT_READY_EVENT } from "../use-install";
 
 /**
@@ -13,5 +14,5 @@ export function PwaScript({ serviceWorker }: { serviceWorker: boolean }) {
     (serviceWorker
       ? `if("serviceWorker"in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{scope:"/",updateViaCache:"none"}).catch(function(){})});`
       : "");
-  return <script dangerouslySetInnerHTML={{ __html: code }} />;
+  return <InlineScript html={code} />;
 }

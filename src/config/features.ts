@@ -6,6 +6,7 @@ const features: FeaturesConfig = {
   pwa: true,
   installPrompt: { enabled: true, delaySeconds: 25, snoozeDays: 14 },
   offlineBanner: true,
+  toaster: { enabled: true, position: "top-center" },
 };
 
 export const featuresConfig = featuresSchema.parse(features);

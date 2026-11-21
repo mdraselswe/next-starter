@@ -10,8 +10,10 @@ Any AI coding tool (Claude Code, Cursor, Codex, Copilot, …) can follow this fi
 - **Idea:** what it is and who it's for, in a sentence or two.
 - **Name:** default to the current folder's name (lowercase-with-dashes).
 - **GitHub:** create a private GitHub repo? Default **yes** if `gh auth status` works, otherwise local only (can be added later, step 6).
+- **Feel:** 3–5 words for how it should feel (e.g. "warm, caring, playful") and 2–3 sites or apps they like. If they have none, find references yourself in Prompt 1. Never default to the starter's look or its example directions.
+- **Languages:** the default language (served at `/`) and any others (served at `/<code>/`), e.g. "Bangla, plus English" → `bn en`. Suggest the language the person writes in. Also the time zone and currency if not obvious (Bangladesh: `Asia/Dhaka`, `BDT`).
 
-Decide yourself and say it in one line: render mode **server** if the idea needs login, a database, payments, an admin area or per-request data; otherwise **static**.
+Decide yourself and say it in one line: render mode **server** if the idea needs login, a database, payments, an admin area or per-request data (then also `--lock`, since it can never be static); otherwise **static**. Host: **Cloudflare** when the budget is free tier and the site is commercial (Vercel's free plan is non-commercial); otherwise ask.
 
 ## 2. Get the code
 
@@ -43,7 +45,9 @@ rm -rf .git && git init -b main
 corepack enable
 pnpm install
 pnpm setup-project <name>
-pnpm mode static        # or: pnpm mode server
+pnpm locales bn en      # default first; e.g. `pnpm locales en` for English only
+pnpm mode static --host cloudflare   # or: pnpm mode server --lock --host cloudflare
+# then set i18n.timeZone, i18n.currency and privatePaths in src/config/site.ts
 ```
 
 `setup-project` renames the package, upgrades everything to the newest versions that pass the checks (`pnpm auto-upgrade`), installs the Playwright browser and runs `pnpm check`. If something fails, read the error and fix it; never use `--force`, `--legacy-peer-deps` or `--no-verify`.
@@ -51,8 +55,8 @@ pnpm mode static        # or: pnpm mode server
 ## 4. Build the product
 
 1. Read `AGENTS.md` (the project rules; your tool may load it automatically) and `STARTER-KIT.md`.
-2. Prompts 3–4 of STARTER-KIT (scaffold, tooling) are already done by the template. Run **Prompt 0** (product brief) and **Prompt 1** (design direction) with the person's idea. Show each as a short, plain summary and wait for an "ok" (or changes) before building.
-3. Apply the brand by following `.claude/skills/rebrand/SKILL.md` (it is plain Markdown; any tool can follow it): `src/config/site.ts`, colours, fonts, features, copy. Replace the README's first section with this project's description.
+2. Prompts 3–4 of STARTER-KIT (scaffold, tooling) are already done by the template. Run **Prompt 0** (product brief) and **Prompt 1** (design direction) with the person's idea. In Prompt 1, write three new directions for this product into `src/app/[locale]/dev/directions/directions.ts` and ask the person to compare them on `/dev/directions` (run `pnpm dev`). Show each as a short, plain summary and wait for an "ok" (or changes) before building.
+3. Apply the brand by following `.claude/skills/rebrand/SKILL.md` (it is plain Markdown; any tool can follow it): `src/config/site.ts`, the chosen direction into `src/config/design.ts`, colours, fonts, features, copy. Then build the direction's signature (illustration, one or two signature interactions, own 404/error/empty scenes) and go through the "Don't look like the starter" checklist in docs/design-system.md. Replace the README's first section with this project's description.
 4. Continue with the remaining STARTER-KIT prompts. For pages and features follow `.claude/skills/add-page/SKILL.md` and `.claude/skills/add-feature/SKILL.md`.
 5. Before every commit: `pnpm check`, and `pnpm build && pnpm test:e2e`. Commit with Conventional Commits (e.g. `feat: booking page`).
 

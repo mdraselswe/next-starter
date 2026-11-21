@@ -1,14 +1,21 @@
 /**
  * ✏️ Every UI string. Components call t("key"); `{name}` placeholders are
- * filled from the second argument. Add a locale by copying this file to
- * messages/<locale>.ts (typed as `Messages`) and registering it in i18n/index.ts.
+ * filled from the second argument. This file defines the keys: other
+ * languages (bn.ts…) are typed as `Messages`, so a missing key is a type error.
+ * Register languages in messages/index.ts.
  */
 export const en = {
   "a11y.skip": "Skip to content",
+  "meta.description": "A strict, configurable Next.js starter with static and server modes.",
+  "nav.main": "Main",
+  "nav.mobile": "Mobile",
+  "nav.footer": "Footer",
   "nav.home": "Home",
   "nav.about": "About",
   "nav.menu": "Menu",
   "nav.close": "Close menu",
+  "locale.label": "Language",
+  "locale.switch": "Change language",
   "theme.system": "Theme: match device",
   "theme.light": "Theme: light",
   "theme.dark": "Theme: dark",
@@ -19,17 +26,30 @@ export const en = {
   "notFound.title": "Page not found",
   "notFound.body": "The page you are looking for doesn't exist or has moved.",
   "notFound.cta": "Go home",
+  "notFound.back": "Go back",
+  "notFound.links": "Or try one of these",
   "error.title": "Something went wrong",
   "error.body": "Please try again. If it keeps happening, reload the page.",
   "error.retry": "Try again",
+  "error.retrying": "Trying again…",
+  "error.home": "Go home",
+  "error.offline": "You're offline. We'll try again as soon as you're back.",
+  "error.code": "Error code: {code}",
+  "error.copy": "Copy error code",
+  "error.copied": "Copied",
+  "error.details": "Technical details (development only)",
   "loading.label": "Loading",
+  "connection.offline": "You're offline. We'll reconnect automatically.",
+  "connection.offlineCached": "You're offline. Pages you've visited still work.",
+  "connection.online": "Back online",
+  "toast.region": "Notifications",
+  "toast.close": "Close notification",
   "pwa.title": "Install {name}",
   "pwa.sub": "Open it like an app, fast and even offline.",
   "pwa.install": "Install app",
   "pwa.later": "Not now",
   "pwa.close": "Close",
   "pwa.footer": "Install the app",
-  "pwa.offline": "You're offline. Pages you've visited still work.",
   "pwa.ios1": "Tap [Share] in Safari's toolbar.",
   "pwa.ios2": "Choose [Add to Home Screen].",
   "pwa.ios3": "Tap [Add]. {name} appears on your home screen.",
@@ -42,6 +62,8 @@ export const en = {
   "pwa.mac1": "In Safari, choose [File] → [Add to Dock].",
   "pwa.mac2": "{name} opens from the Dock like an app.",
   "pwa.unsupported": "Your browser can't install apps. Try Chrome, Edge or Safari.",
+  "dev.title": "Design system",
+  "dev.sub": "Tokens, themes and components of this project. Only in development.",
 } as const;
 
 export type MessageKey = keyof typeof en;

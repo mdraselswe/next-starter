@@ -1,9 +1,9 @@
-import type { Route } from "next";
 import type { MessageKey } from "@/i18n";
-import { ROUTES } from "./routes";
+import { ROUTES, type AppRoute } from "./routes";
 
 export interface NavLink {
-  href: Route;
+  /** A page from ROUTES (no locale prefix); components add the locale with `localeHref`. */
+  href: AppRoute;
   label: MessageKey;
 }
 

@@ -1,4 +1,5 @@
 import { buildEnv, publicEnv } from "./env.ts";
+import { designConfig } from "./design.ts";
 import { featuresConfig } from "./features.ts";
 import { siteConfig } from "./site.ts";
 
@@ -15,10 +16,22 @@ export const features = {
     ...featuresConfig.installPrompt,
     enabled: featuresConfig.pwa && featuresConfig.installPrompt.enabled,
   },
-  offlineBanner: featuresConfig.pwa && featuresConfig.offlineBanner,
 };
+
+/** The project's look as knobs (src/config/design.ts). */
+export const design = designConfig;
 
 export const isProduction = buildEnv.NODE_ENV === "production";
 
-export type { RenderMode, ThemeMode } from "./schema.ts";
-export { THEME_MODES } from "./schema.ts";
+export type { DesignConfig, Host, RenderMode, ThemeMode, ToastPosition } from "./schema.ts";
+export {
+  BORDERS,
+  CONTROL_SHAPES,
+  DENSITIES,
+  ELEVATIONS,
+  HOSTS,
+  MOTIONS,
+  TEXTURES,
+  THEME_MODES,
+  TOAST_POSITIONS,
+} from "./schema.ts";

@@ -28,10 +28,10 @@ jobs:
       - run: pnpm lint
       - run: pnpm format:check
       - run: pnpm test
-      - name: Build (server mode)
-        run: pnpm build
-        env:
-          RENDER_MODE: server
+      # The other render mode first (skipped when site.renderLocked), so the
+      # configured build is the one e2e tests run against.
+      - name: Build (other mode)
+        run: pnpm build:other
       - name: Build (configured mode)
         run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
